@@ -2,6 +2,7 @@ import userModel from "../models/userModel.js";
 import bcrypt from "bcryptjs";
 import generateToken from "../utils/generateToken.js";
 import sendEmail from "../config/nodemailer.js";
+import generateOtp from "../utils/generateOtp.js";
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -86,5 +87,35 @@ export const logout = async (req, res) => {
     return res.json({ success: false, message: "Logged Out!" });
   } catch (error) {
     return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+export const sendVerificationOtp = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    const user = await userModel.findOne({ _id: userId });
+
+    if (user.isAccountVerified) {
+      return res.json({ success: false, message: "Account already verified." });
+    }
+
+    const otp = generateOtp();
+    user.verifyOtp = otp;
+    user.verifyOtpExpireAt = Date.now() + 1 * 60 * 60 * 1000;
+
+    await user.save();
+
+    const email = user.email;
+    const subject = "🔐 Account Verification OTP";
+    const message = `Your OTP is ${otp}. Verify you account using this OTP.`;
+
+    sendEmail(email, subject, message);
+    return res.json({
+      success: true,
+      message: "Verification OTP Send on your email.",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
   }
 };

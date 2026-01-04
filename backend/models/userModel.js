@@ -6,6 +6,11 @@ const UserSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    type: {
+      type: String,
+      enum: ["user", "admin"],
+      default: "user",
+    },
     email: {
       type: String,
       required: true,
@@ -19,7 +24,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    verifyOtpExpiresAt: {
+    verifyOtpExpireAt: {
       type: Number,
       default: 0,
     },
@@ -31,7 +36,7 @@ const UserSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    resetOtpExpiresAt: {
+    resetOtpExpireAt: {
       type: Boolean,
       default: 0,
     },
