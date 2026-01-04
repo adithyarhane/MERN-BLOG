@@ -4,6 +4,7 @@ import {
   login,
   logout,
   register,
+  resetPassword,
   sendResetOtp,
   sendVerificationOtp,
   verifyAccount,
@@ -19,5 +20,6 @@ authRouter.route("/send-verification-otp").post(userAuth, sendVerificationOtp);
 authRouter.route("/verify-account").post(userAuth, verifyAccount);
 authRouter.route("/is-auth").get(userAuth, isAuthenticated);
 authRouter.route("/send-reset-otp").post(sendResetOtp);
+authRouter.route("/reset-password").post(resetPassword);
 
 export default authRouter;
