@@ -180,3 +180,38 @@ export const isAuthenticated = async (req, res) => {
     res.status(500).json({ success: false, message: error.message });
   }
 };
+
+export const sendResetOtp = async (req, res) => {
+  const { email } = req.body;
+
+  if (!email) {
+    return res.json({ success: false, message: "Email is required." });
+  }
+
+  try {
+    const user = await userModel.findOne({ email });
+
+    if (!user) {
+      return res.json({ success: false, message: "User not found." });
+    }
+
+    const otp = generateOtp();
+    user.resetOtp = otp;
+    user.resetOtpExpireAt = Date.now() + 15 * 60 * 1000;
+
+    await user.save();
+
+    // Sending Reset otp
+    const subject = "🔑 Password Reset OTP";
+    const message = `OTP For resetting your password is ${otp} Use this OTP to process with resetting your password.`;
+
+    sendEmail(email, subject, message);
+
+    return res.json({
+      success: true,
+      message: "Reset OTP sent to your email.",
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
