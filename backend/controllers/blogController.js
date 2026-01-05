@@ -108,7 +108,7 @@ export const likeBlog = async (req, res) => {
       });
     }
 
-    const isLiked = blog.likes.includes(blogId);
+    const isLiked = blog.likes.includes(userId);
 
     if (isLiked) {
       blog.likes = blog.likes.filter((id) => id !== userId);
