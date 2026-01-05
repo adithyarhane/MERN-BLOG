@@ -130,3 +130,42 @@ export const likeBlog = async (req, res) => {
     });
   }
 };
+
+export const saveBlog = async (req, res) => {
+  const userId = req.user.id;
+  const { blogId } = req.params;
+
+  try {
+    if (!mongoose.Types.ObjectId.isValid(blogId)) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid blog ID" });
+    }
+
+    const blog = await blogModel.findById(blogId);
+
+    if (!blog) {
+      return res.status(404).json({
+        success: false,
+        message: "Blog not found.",
+      });
+    }
+
+    const isSaved = blog.saves.includes(userId);
+
+    if (isSaved) {
+      blog.saves = blog.saves.filter((id) => id !== userId);
+    } else {
+      blog.saves.push(userId);
+    }
+
+    await blog.save();
+
+    return res.status(200).json({
+      success: true,
+      saved: !isSaved,
+    });
+  } catch (error) {
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
