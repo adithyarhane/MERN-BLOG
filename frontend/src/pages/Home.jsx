@@ -9,7 +9,7 @@ const Home = () => {
   const { blogs } = useBlogContext();
 
   useEffect(() => {
-    document.title = "liwitoBlogs";
+    document.title = "liwotoBlogs";
   }, []);
   return (
     <div className="bg-gray-50 min-h-screen">
