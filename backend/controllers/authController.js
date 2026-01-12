@@ -42,8 +42,8 @@ export const register = async (req, res) => {
     });
 
     // Sending Welcome Email
-    const subject = "Welcome to Mernblog ✨";
-    const message = `✨ Welcome to Mernblog Website. Your account has been created with email id: ${email}`;
+    const subject = "Welcome to liwotoBlogs ✨";
+    const message = `✨ Welcome to liwotoBlogs Website. Your account has been created with email id: ${email}`;
 
     sendEmail(email, subject, message);
 
