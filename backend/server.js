@@ -14,8 +14,7 @@ connectDB();
 connectCloudinary();
 
 const allowedOrigins = [
-  "http://10.129.202.173:5173",
-  "http://10.129.202.135:5173",
+  "https://liwotoblogs.onrender.com",
   "http://localhost:5173",
 ];
 // middleware
