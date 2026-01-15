@@ -55,31 +55,53 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   const { email, password } = req.body;
+
   try {
     const user = await userModel.findOne({ email });
 
     if (!user) {
-      return res.json({ success: false, message: "User not found." });
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-
     if (!isMatch) {
-      return res.json({ success: false, message: "Invalid Password." });
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    if (!user.isAccountVerified) {
+      return res.status(401).json({
+        success: false,
+        message: "Please verify your account",
+      });
     }
 
     const token = generateToken(user._id);
+    const isProd = process.env.NODE_ENV === "production";
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production" ? true : false,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+      secure: isProd,
+      sameSite: isProd ? "none" : "lax",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
-    return res.json({ success: true, user: { user } });
+    const { password: _, ...safeUser } = user._doc;
+
+    return res.status(200).json({
+      success: true,
+      user: safeUser,
+    });
   } catch (error) {
-    return res.status(500).json({ success: fale, message: error.message });
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
