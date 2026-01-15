@@ -13,8 +13,8 @@ export const AuthContextProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [userData, setUserData] = useState(null);
 
-  const [userData, setUserData] = useState(false);
   // ---------------------- Register -------------------------------
   const register = async (e, name, email, password) => {
     e.preventDefault();
@@ -43,22 +43,25 @@ export const AuthContextProvider = ({ children }) => {
   // ----------------------- LOGIN --------------------
   const login = async (e, email, password) => {
     e.preventDefault();
+    setIsLoading(true);
+
     try {
       const res = await axios.post(`${BASE_URL}/api/v1/auth/login`, {
         email,
         password,
       });
+
       if (!res.data.success) {
         toast.error(res.data.message);
         return;
       }
 
+      // ✅ DO NOT fetch user here
       setIsLoggedIn(true);
       getUserData();
-      setIsAuthLoading(false);
       navigate("/");
     } catch (error) {
-      toast.error(error.message);
+      toast.error(error.response?.data?.message || "Login failed");
     } finally {
       setIsLoading(false);
     }
@@ -67,14 +70,12 @@ export const AuthContextProvider = ({ children }) => {
   // ------------------ LOGOUT ------------------------
   const logout = async () => {
     try {
-      const res = await axios.post(`${BASE_URL}/api/v1/auth/logout`);
-      if (res.data.success) {
-        navigate("/");
-        setIsLoggedIn(false);
-        setUserData(false);
-      }
+      await axios.post(`${BASE_URL}/api/v1/auth/logout`);
+      setIsLoggedIn(false);
+      setUserData(null);
+      navigate("/login");
     } catch (error) {
-      toast.error(error.message);
+      toast.error("Logout failed");
     }
   };
 
@@ -158,20 +159,17 @@ export const AuthContextProvider = ({ children }) => {
 
   // ------------------- FETCH USER DATA ------------------
   const getUserData = async () => {
-    setIsLoading(true);
     try {
       const res = await axios.get(`${BASE_URL}/api/v1/user/data`);
       if (res.data.success) {
         setUserData(res.data.userData);
       }
-    } catch (error) {
-      toast.error(error.message);
-    } finally {
-      setIsLoading(false);
+    } catch {
+      setUserData(null);
     }
   };
 
-  // ------------------ AUTH CHECK ON MOUNT --------------------
+  // ---------------- AUTH CHECK (RUNS ONCE) ----------------
   useEffect(() => {
     const checkAuth = async () => {
       try {
@@ -179,12 +177,12 @@ export const AuthContextProvider = ({ children }) => {
 
         if (res.data.success) {
           setIsLoggedIn(true);
-          getUserData();
+          await getUserData(); // ✅ safe here
         } else {
           setIsLoggedIn(false);
           setUserData(null);
         }
-      } catch (error) {
+      } catch {
         setIsLoggedIn(false);
         setUserData(null);
       } finally {
